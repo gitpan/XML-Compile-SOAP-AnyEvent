@@ -1,0 +1,175 @@
+=head1 NAME
+
+XML::Compile::Transport::SOAPHTTP_AnyEvent - exchange XML via AnyEvent::HTTP
+
+=head1 SYNOPSIS
+
+ use XML::Compile::Transport::SOAPHTTP_AnyEvent;
+
+ my $http = XML::Compile::Transport::SOAPHTTP_AnyEvent->new(@options);
+ my $send = $http->compileClient(@options2);
+
+ my $call = $wsdl->compileClient
+   ( operation => 'some-port-name'
+   , transport => $send
+   , async     => 1      # required!
+   );
+
+ sub handler
+   { my ($xmlout, $trace) = @_;
+     # so something
+   };
+
+ $call->($xmlin, _callback => \&handler);
+
+=head1 DESCRIPTION
+
+This module handles the exchange of (XML) messages, according to the
+rules of SOAP (any version).  The module does not known how to parse
+or compose XML, but only worries about the HTTP aspects.
+
+In contrairy to L<XML::Compile::Transport::SOAPHTTP|XML::Compile::Transport::SOAPHTTP>, this implementation
+can be used in various event-driven environments, via AnyEvent::HTTP.
+
+=head1 METHODS
+
+XML::Compile::Transport::SOAPHTTP_AnyEvent-E<gt>B<new>(OPTIONS)
+
+=over 4
+
+ Option          --Default
+ any_event_params  []
+
+. any_event_params => ARRAY
+
+=over 4
+
+Options passed to AnyEvent::HTTP, for instance C<timeout> and C<proxy>.
+The ARRAY is a list of PAIRS.
+
+=back
+
+=back
+
+=head2 Accessors
+
+$obj-E<gt>B<anyEventParams>
+
+=over 4
+
+=back
+
+=head2 Handlers
+
+$obj-E<gt>B<compileClient>(OPTIONS)
+
+=over 4
+
+Compile an HTTP client handler.  Returned is a subroutine which is called
+with a text represenation of the XML request, or an XML::LibXML tree.
+In SCALAR context, an XML::LibXML parsed tree of the answer message
+is returned.  In LIST context, that answer is followed by a HASH which
+contains trace information.
+
+ Option   --Default
+ action     ''
+ header     <created>
+ kind       'request-response'
+ method     'POST'
+ mime_type  <depends on soap version>
+ mpost_id   42
+ soap       'SOAP11'
+
+. action => URI
+
+. header => HTTP::Headers object
+
+=over 4
+
+Versions of L<XML::Compile|XML::Compile>, L<XML::Compile::SOAP|XML::Compile::SOAP>, and LWP will be
+added to simplify bug reports.
+
+=back
+
+. kind => DIRECTION
+
+=over 4
+
+What kind of interactie, based on the four types defined by WSDL(1):
+C<notification-operation> (server initiated, no answer required),
+C<one-way> (client initiated, no answer required), C<request-response>
+(client initiated, the usual in both directions), C<solicit-response> (server
+initiated "challenge").
+
+=back
+
+. method => 'POST'|'M-POST'
+
+=over 4
+
+With C<POST>, you get the standard HTTP exchange.  The C<M-POST> is
+implements the (Microsoft) HTTP Extension Framework.  Some servers
+accept both, other require a specific request.
+
+=back
+
+. mime_type => STRING
+
+. mpost_id => INTEGER
+
+=over 4
+
+With method C<M-POST>, the header extension fields require (any) number
+to be grouped.
+
+=back
+
+. soap => 'SOAP11'|'SOAP12'|OBJECT
+
+=back
+
+$obj-E<gt>B<headerAddVersions>(HEADER)
+
+XML::Compile::Transport::SOAPHTTP_AnyEvent-E<gt>B<headerAddVersions>(HEADER)
+
+=over 4
+
+Adds some lines about module versions, which may help debugging
+or error reports.  This is called when a new client or server
+is being created.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of XML-Compile-SOAP-AnyEvent distribution version 0.01,
+built on November 01, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+
+All modules in this suite:
+L<XML::Compile>,
+L<XML::Compile::SOAP>,
+L<XML::Compile::SOAP12>,
+L<XML::Compile::SOAP::Daemon>,
+L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::Tester>,
+L<XML::Compile::Cache>,
+L<XML::Compile::Dumper>,
+L<XML::Compile::RPC>,
+and
+L<XML::Rewrite>,
+L<XML::eXistDB>,
+L<XML::LibXML::Simple>.
+
+Please post questions or ideas to the mailinglist at
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
+For life contact with other developers, visit the C<#xml-compile> channel
+on C<irc.perl.org>.
+
+=head1 LICENSE
+
+Copyrights 2010 by Aleksey Mashanov/Mark Overmeer. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
